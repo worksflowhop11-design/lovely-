@@ -1,0 +1,6 @@
+{
+  "name": "Do You Love Me?",
+  "description": "A romantic interactive webpage featuring cute hugging teddy bears, floating hearts, and playful Yes/No interactions.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
