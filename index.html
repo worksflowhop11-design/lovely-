@@ -6,12 +6,12 @@
     <title>Do You Like Me?</title>
     <meta
       name="description"
-      content="A romantic interactive confession experience featuring cute hugging teddy bears, floating hearts, and playful Yes/No interactions."
+      content="A romantic interactive confession and date planner website featuring cute hugging teddy bears, floating hearts, background music, and playful interactions."
     />
     <meta property="og:title" content="Do You Like Me?" />
     <meta
       property="og:description"
-      content="A romantic interactive confession experience featuring cute hugging teddy bears, floating hearts, and playful Yes/No interactions."
+      content="A romantic interactive confession and date planner website featuring cute hugging teddy bears, floating hearts, and a date planner."
     />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
@@ -21,10 +21,428 @@
       href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&family=Poppins:wght@600;700;800&display=swap"
       rel="stylesheet"
     />
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <!-- Single Persistent Root Audio Element (never recreated or reset across sections) -->
+    <audio id="bg-music" loop preload="auto" playsinline>
+      <source src="assets/romantic-song.mp3" type="audio/mpeg" />
+    </audio>
+
+    <!-- Floating Bottom-Right Music Control -->
+    <div
+      id="music-control"
+      class="music-control"
+      data-music-control="true"
+      aria-label="Background music controls"
+    >
+      <div id="music-indicator" class="music-indicator" aria-hidden="true">
+        <span class="music-bar bar-1"></span>
+        <span class="music-bar bar-2"></span>
+        <span class="music-bar bar-3"></span>
+        <svg class="music-note-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 18V5l12-2v13"></path>
+          <circle cx="6" cy="18" r="3"></circle>
+          <circle cx="18" cy="16" r="3"></circle>
+        </svg>
+      </div>
+
+      <button
+        id="music-play-btn"
+        type="button"
+        class="music-btn music-btn-primary"
+        aria-label="Play background music"
+        title="Play / Pause music"
+      >
+        <svg id="icon-play" class="btn-svg" viewBox="0 0 24 24" fill="currentColor">
+          <polygon points="6 4 20 12 6 20 6 4"></polygon>
+        </svg>
+        <svg id="icon-pause" class="btn-svg hidden" viewBox="0 0 24 24" fill="currentColor">
+          <rect x="6" y="4" width="4" height="16" rx="1"></rect>
+          <rect x="14" y="4" width="4" height="16" rx="1"></rect>
+        </svg>
+      </button>
+
+      <button
+        id="music-mute-btn"
+        type="button"
+        class="music-btn music-btn-ghost"
+        aria-label="Mute music"
+        title="Mute / Unmute"
+      >
+        <svg id="icon-vol-on" class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+        </svg>
+        <svg id="icon-vol-off" class="btn-svg hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <line x1="23" y1="9" x2="17" y2="15"></line>
+          <line x1="17" y1="9" x2="23" y2="15"></line>
+        </svg>
+      </button>
+
+      <div class="music-volume-wrap">
+        <input
+          id="music-volume"
+          type="range"
+          min="0"
+          max="1"
+          step="0.05"
+          value="0.35"
+          aria-label="Music volume"
+          class="music-volume-slider"
+        />
+      </div>
+
+      <span id="music-unavailable" class="music-unavailable hidden" role="status">
+        Music unavailable
+      </span>
+    </div>
+
+    <!-- Ambient Hearts Layer Behind Cards -->
+    <div id="ambient-hearts" class="hearts-layer ambient-layer" aria-hidden="true"></div>
+
+    <!-- ==================== PAGE 1: CONFESSION ==================== -->
+    <main id="page-confession" class="page-wrapper page-centered">
+      <h1 class="main-heading animate-title-in">
+        <span class="text-white">Do You </span>
+        <span class="text-accent">Like Me..?</span>
+      </h1>
+
+      <section id="confession-card" class="pink-card confession-card animate-card-in" aria-live="polite">
+        <div id="confession-hearts" class="hearts-layer" aria-hidden="true"></div>
+        <div id="confession-burst" class="burst-layer" aria-hidden="true"></div>
+
+        <!-- Phase 1: Asking -->
+        <div id="phase-asking" class="card-content">
+          <div id="teddy-wrap" class="teddy-frame animate-teddy-float">
+            <img
+              src="assets/teddy-bears.png"
+              alt="Two cute brown and white teddy bears hugging with a Reply me speech bubble"
+              class="teddy-img"
+            />
+          </div>
+
+          <h2 id="question-text" class="question-heading">Do you like me?</h2>
+
+          <div class="button-row">
+            <button id="btn-yes" type="button" class="btn btn-primary">
+              <span>YES</span>
+              <span class="animate-heart-pulse" aria-hidden="true">❤️</span>
+            </button>
+
+            <button id="btn-no" type="button" class="btn btn-no">
+              <span>NO</span>
+              <span aria-hidden="true">💔</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Phase 2: Beating Heart Transition -->
+        <div id="phase-transition" class="card-content hidden">
+          <div class="beating-heart-wrap">
+            <span class="burst-ring" aria-hidden="true"></span>
+            <svg viewBox="0 0 24 24" class="beating-heart-svg animate-heart-pulse" aria-label="Sending love">
+              <path
+                fill="currentColor"
+                d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+              />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Phase 3: Romantic Surprise Screen -->
+        <div id="phase-celebrating" class="card-content hidden">
+          <div class="teddy-frame animate-teddy-float stagger-item" style="--stagger-delay: 0s">
+            <img
+              src="assets/teddy-bears.png"
+              alt="Cute brown and white teddy bears hugging happily"
+              class="teddy-img"
+            />
+          </div>
+
+          <h2 class="surprise-heading stagger-item" style="--stagger-delay: 0.18s">
+            I Have a Little Crush on You! ❤️
+          </h2>
+
+          <p class="surprise-subtext stagger-item" style="--stagger-delay: 0.44s">
+            You make me smile without even trying.
+          </p>
+
+          <p class="surprise-final stagger-item" style="--stagger-delay: 0.7s">
+            Maybe we could be something special? 💕
+          </p>
+
+          <div class="button-row stagger-item" style="--stagger-delay: 0.96s">
+            <button id="btn-plan-date" type="button" class="btn btn-primary">
+              <span>Plan Our Date 💗</span>
+            </button>
+
+            <button id="btn-send-again" type="button" class="btn btn-white">
+              <span>Send Love Again</span>
+              <span class="animate-heart-pulse" aria-hidden="true">❤️</span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ==================== PAGE 2: DATE PLANNER ==================== -->
+    <main id="page-planner" class="page-wrapper page-top hidden">
+      <header class="planner-header animate-title-in">
+        <h1 class="main-heading planner-title">
+          <span class="text-white">Let's Plan Our </span>
+          <span class="text-accent">Date! 💗</span>
+        </h1>
+        <p class="planner-subtitle">
+          A little time together, a little food and lots of smiles.
+        </p>
+      </header>
+
+      <section id="planner-card" class="pink-card planner-card animate-card-in" aria-live="polite">
+        <div id="planner-hearts" class="hearts-layer" aria-hidden="true"></div>
+        <div id="planner-burst" class="burst-layer" aria-hidden="true"></div>
+
+        <div class="planner-topbar">
+          <button id="btn-planner-back" type="button" class="btn-back">
+            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span id="back-btn-label">Back</span>
+          </button>
+        </div>
+
+        <!-- Step 1: Interactive Planner Form -->
+        <div id="planner-step-form" class="planner-form">
+          <div class="teddy-frame animate-teddy-float">
+            <img
+              src="assets/teddy-bears.png"
+              alt="Cute brown and white teddy bears hugging"
+              class="teddy-img"
+            />
+          </div>
+
+          <!-- Section 1: Choose Your Date -->
+          <div id="sec-date" class="planner-section">
+            <div class="section-head">
+              <h2 class="section-title">1. Choose Your Date</h2>
+              <p class="section-desc">Pick any upcoming day that works best for you</p>
+            </div>
+
+            <div class="calendar-box">
+              <div class="calendar-nav">
+                <button
+                  id="cal-prev"
+                  type="button"
+                  class="cal-nav-btn"
+                  aria-label="Previous month"
+                >
+                  <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
+                </button>
+                <h3 id="cal-month-label" class="cal-month-label">Month Year</h3>
+                <button
+                  id="cal-next"
+                  type="button"
+                  class="cal-nav-btn"
+                  aria-label="Next month"
+                >
+                  <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </button>
+              </div>
+
+              <div class="cal-weekdays" aria-hidden="true">
+                <div class="cal-wd"><span class="wd-short">Mon</span><span class="wd-full">Monday</span></div>
+                <div class="cal-wd"><span class="wd-short">Tue</span><span class="wd-full">Tuesday</span></div>
+                <div class="cal-wd"><span class="wd-short">Wed</span><span class="wd-full">Wednesday</span></div>
+                <div class="cal-wd"><span class="wd-short">Thu</span><span class="wd-full">Thursday</span></div>
+                <div class="cal-wd"><span class="wd-short">Fri</span><span class="wd-full">Friday</span></div>
+                <div class="cal-wd"><span class="wd-short">Sat</span><span class="wd-full">Saturday</span></div>
+                <div class="cal-wd"><span class="wd-short">Sun</span><span class="wd-full">Sunday</span></div>
+              </div>
+
+              <div id="cal-grid" class="cal-grid"></div>
+
+              <div id="cal-selected-readout" class="cal-readout">
+                Tap any available future date above to pick our day
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Choose Your Time -->
+          <div id="sec-time" class="planner-section">
+            <div class="section-head">
+              <h2 class="section-title">2. Choose Your Time</h2>
+              <p class="section-desc">Select one time slot for our date</p>
+            </div>
+            <div id="time-grid" class="time-grid"></div>
+          </div>
+
+          <!-- Section 3: What Would You Like To Eat? -->
+          <div id="sec-food" class="planner-section">
+            <div class="section-head">
+              <h2 class="section-title">3. What Would You Like To Eat?</h2>
+              <p class="section-desc">Pick one or more cravings you'd love</p>
+            </div>
+            <div id="food-grid" class="food-grid"></div>
+            <div id="custom-food-wrap" class="custom-food-wrap hidden">
+              <input
+                id="custom-food-input"
+                type="text"
+                class="text-input"
+                placeholder="Tell me what you're craving (optional)..."
+                aria-label="Custom food craving"
+              />
+            </div>
+          </div>
+
+          <!-- Section 4: Where Should We Go? -->
+          <div id="sec-place" class="planner-section">
+            <div class="section-head">
+              <h2 class="section-title">4. Where Should We Go?</h2>
+              <p class="section-desc">Choose the vibe for our hangout</p>
+            </div>
+            <div id="place-grid" class="place-grid"></div>
+          </div>
+
+          <!-- Section 5: Add a Personal Message -->
+          <div class="planner-section">
+            <label for="personal-message" class="section-title section-head-label">
+              5. Add a Personal Message
+            </label>
+            <textarea
+              id="personal-message"
+              rows="3"
+              class="textarea-input"
+              placeholder="Anything else you'd like to tell me? 💌"
+            ></textarea>
+          </div>
+
+          <!-- Section 6: Live Summary & Confirmation -->
+          <div class="summary-card">
+            <h3 class="summary-title">Our Date Summary</h3>
+            <dl class="summary-dl">
+              <div>
+                <dt>Date</dt>
+                <dd id="sum-date">Not selected yet</dd>
+              </div>
+              <div>
+                <dt>Time</dt>
+                <dd id="sum-time">Not selected yet</dd>
+              </div>
+              <div>
+                <dt>Food</dt>
+                <dd id="sum-food">Not selected yet</dd>
+              </div>
+              <div>
+                <dt>Place</dt>
+                <dd id="sum-place">Your Choice 💕</dd>
+              </div>
+              <div id="sum-msg-row" class="summary-msg-row hidden">
+                <dt>Personal Message</dt>
+                <dd id="sum-msg"></dd>
+              </div>
+            </dl>
+          </div>
+
+          <div id="validation-alert" class="validation-alert hidden" role="alert"></div>
+
+          <div class="confirm-btn-wrap">
+            <button id="btn-confirm-date" type="button" class="btn btn-primary btn-lg">
+              Confirm Our Date 💗
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 2: Final Date Confirmation & WhatsApp Sharing -->
+        <div id="planner-step-confirmed" class="planner-confirmed hidden">
+          <div class="teddy-frame animate-teddy-float stagger-item" style="--stagger-delay: 0s">
+            <img
+              src="assets/teddy-bears.png"
+              alt="Cute brown and white teddy bears hugging"
+              class="teddy-img"
+            />
+          </div>
+
+          <h2 class="confirmed-heading stagger-item" style="--stagger-delay: 0.14s">
+            Yay! We Have a Date! ❤️
+          </h2>
+
+          <p class="confirmed-subtitle stagger-item" style="--stagger-delay: 0.32s">
+            Can't wait to spend some lovely time together!
+          </p>
+
+          <div class="confirmed-details-card stagger-item" style="--stagger-delay: 0.5s">
+            <dl class="confirmed-dl">
+              <div class="confirmed-row">
+                <dt>📅 Date</dt>
+                <dd id="conf-date"></dd>
+              </div>
+              <div class="confirmed-row">
+                <dt>📆 Day</dt>
+                <dd id="conf-day"></dd>
+              </div>
+              <div class="confirmed-row">
+                <dt>⏰ Time</dt>
+                <dd id="conf-time"></dd>
+              </div>
+              <div class="confirmed-row">
+                <dt>🍕 Food</dt>
+                <dd id="conf-food"></dd>
+              </div>
+              <div class="confirmed-row">
+                <dt>📍 Place</dt>
+                <dd id="conf-place"></dd>
+              </div>
+              <div class="confirmed-msg-block">
+                <dt>💌 Personal Message</dt>
+                <dd id="conf-msg" class="confirmed-msg-pill"></dd>
+              </div>
+            </dl>
+          </div>
+
+          <p id="whatsapp-hint" class="whatsapp-hint stagger-item" style="--stagger-delay: 0.62s">
+            Clicking below opens WhatsApp with your message pre-filled so you can review and press Send.
+          </p>
+
+          <div class="button-row stagger-item" style="--stagger-delay: 0.72s">
+            <a
+              id="btn-whatsapp-send"
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn btn-primary"
+            >
+              Send My Date Plan on WhatsApp 💌
+            </a>
+
+            <button id="btn-edit-choices" type="button" class="btn btn-white">
+              <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 20h9"></path>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+              </svg>
+              <span>Edit My Choices</span>
+            </button>
+          </div>
+
+          <div class="stagger-item" style="--stagger-delay: 0.84s">
+            <button id="btn-copy-message" type="button" class="btn-copy">
+              <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span id="copy-btn-label">Copy Message (WhatsApp Fallback)</span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="script.js" defer></script>
   </body>
 </html>
-
