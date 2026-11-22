@@ -17,10 +17,10 @@
   ];
 
   const FOOD_OPTIONS = [
-    { id: 'pizza', label: 'Pizza 🍕', img: 'assets/food/pizza.png' },
-    { id: 'burger', label: 'Burger 🍔', img: 'assets/food/burger.png' },
-    { id: 'pasta', label: 'Pasta 🍝', img: 'assets/food/pasta.png' },
-    { id: 'ice-cream', label: 'Ice Cream 🍦', img: 'assets/food/icecream.png' },
+    { id: 'pizza', label: 'Pizza 🍕', img: './assets/food/pizza.png' },
+    { id: 'burger', label: 'Burger 🍔', img: './assets/food/burger.png' },
+    { id: 'pasta', label: 'Pasta 🍝', img: './assets/food/pasta.png' },
+    { id: 'ice-cream', label: 'Ice Cream 🍦', img: './assets/food/icecream.png' },
     {
       id: 'coffee-dessert',
       label: 'Coffee & Dessert ☕',
